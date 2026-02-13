@@ -1,73 +1,109 @@
-<div style="font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center;">
-    <h3>Grabadora de Audio Directa a Drive</h3>
-    <p>Presiona grabar, habla y luego presiona enviar.</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Grabadora Pro a Drive</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f4f9; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; }
+        button { padding: 12px 25px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        #recordBtn { background: #d9534f; color: white; }
+        #stopBtn { background: #5bc0de; color: white; }
+        #uploadBtn { background: #5cb85c; color: white; }
+        button:disabled { background: #ccc !important; cursor: not-allowed; }
+        audio { display: block; margin: 20px auto; width: 300px; }
+        #status { color: #555; margin-top: 15px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h3>🎤 Grabadora de Audio</h3>
+    <button id="recordBtn">Grabar</button>
+    <button id="stopBtn" disabled>Detener</button>
+    <button id="uploadBtn" disabled>Enviar a Drive</button>
     
-    <button id="recordBtn" style="padding: 10px 20px; background: #d9534f; color: white; border: none; cursor: pointer;">Grabar</button>
-    <button id="stopBtn" disabled style="padding: 10px 20px; background: #5bc0de; color: white; border: none; cursor: pointer;">Detener</button>
-    <button id="uploadBtn" disabled style="padding: 10px 20px; background: #5cb85c; color: white; border: none; cursor: pointer;">Enviar a mi Profesor</button>
-    
-    <p id="status" style="margin-top: 10px; color: #666;"></p>
-    <audio id="preview" controls style="display:none; margin: 0 auto;"></audio>
+    <audio id="preview" controls></audio>
+    <div id="status">Listo para empezar</div>
+</div>
 
-    <script>
-        let mediaRecorder;
-        let audioChunks = [];
-        const scriptURL = "TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUÍ"; // PEGA AQUÍ TU URL
+<script>
+    let mediaRecorder;
+    let audioChunks = [];
+    const scriptURL = "TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUÍ"; 
 
-        const recordBtn = document.getElementById('recordBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const status = document.getElementById('status');
-        const preview = document.getElementById('preview');
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const status = document.getElementById('status');
+    const preview = document.getElementById('preview');
 
-        recordBtn.onclick = async () => {
+    recordBtn.onclick = async () => {
+        try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                preview.src = URL.createObjectURL(audioBlob);
-                preview.style.display = 'block';
-                uploadBtn.disabled = false;
+            
+            // Detectar formato soportado (WebM para Chrome/Edge, MP4 para Safari)
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+            
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
+            
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) audioChunks.push(e.data);
             };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: mimeType });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                preview.src = audioUrl;
+                uploadBtn.disabled = false;
+                status.innerText = "Grabación finalizada. Escúchala antes de enviar.";
+            };
+
             audioChunks = [];
             mediaRecorder.start();
-            status.innerText = "Grabando...";
+            status.innerText = "🔴 Grabando... hable ahora.";
             recordBtn.disabled = true;
             stopBtn.disabled = false;
-        };
+            uploadBtn.disabled = true;
+        } catch (err) {
+            status.innerText = "Error: No se pudo acceder al micrófono.";
+            console.error(err);
+        }
+    };
 
-        stopBtn.onclick = () => {
-            mediaRecorder.stop();
-            status.innerText = "Grabación lista para enviar.";
-            stopBtn.disabled = true;
-            recordBtn.disabled = false;
-        };
+    stopBtn.onclick = () => {
+        mediaRecorder.stop();
+        // Detener el micrófono físicamente para liberar el hardware
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+    };
 
-        uploadBtn.onclick = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = () => {
-                const base64Data = reader.result.split(',')[1];
-                status.innerText = "Enviando a Google Drive... espera.";
-                uploadBtn.disabled = true;
+    uploadBtn.onclick = () => {
+        status.innerText = "⏳ Subiendo archivo a Drive...";
+        uploadBtn.disabled = true;
 
-                fetch(scriptURL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Necesario para Google Apps Script
-                    cache: 'no-cache',
-                    body: JSON.stringify({
-                        audio: base64Data,
-                        userName: "Alumno_Blackboard" // Puedes personalizar esto
-                    })
-                }).then(() => {
-                    status.innerText = "¡Enviado con éxito! Ya puedes cerrar esta ventana.";
-                }).catch(err => {
-                    status.innerText = "Error al enviar. Intenta de nuevo.";
-                    console.error(err);
-                });
-            };
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+            const base64Data = reader.result.split(',')[1];
+            
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    audio: base64Data,
+                    userName: "Alumno_Blackboard_" + Math.floor(Math.random() * 1000)
+                })
+            }).then(() => {
+                status.innerText = "✅ ¡Enviado con éxito! Ya puedes cerrar.";
+            }).catch(err => {
+                status.innerText = "❌ Error al enviar.";
+                uploadBtn.disabled = false;
+            });
         };
-    </script>
-</div>
+    };
+</script>
+</body>
+</html>
