@@ -1,0 +1,73 @@
+<div style="font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center;">
+    <h3>Grabadora de Audio Directa a Drive</h3>
+    <p>Presiona grabar, habla y luego presiona enviar.</p>
+    
+    <button id="recordBtn" style="padding: 10px 20px; background: #d9534f; color: white; border: none; cursor: pointer;">Grabar</button>
+    <button id="stopBtn" disabled style="padding: 10px 20px; background: #5bc0de; color: white; border: none; cursor: pointer;">Detener</button>
+    <button id="uploadBtn" disabled style="padding: 10px 20px; background: #5cb85c; color: white; border: none; cursor: pointer;">Enviar a mi Profesor</button>
+    
+    <p id="status" style="margin-top: 10px; color: #666;"></p>
+    <audio id="preview" controls style="display:none; margin: 0 auto;"></audio>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        const scriptURL = "TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUÍ"; // PEGA AQUÍ TU URL
+
+        const recordBtn = document.getElementById('recordBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const status = document.getElementById('status');
+        const preview = document.getElementById('preview');
+
+        recordBtn.onclick = async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                preview.src = URL.createObjectURL(audioBlob);
+                preview.style.display = 'block';
+                uploadBtn.disabled = false;
+            };
+            audioChunks = [];
+            mediaRecorder.start();
+            status.innerText = "Grabando...";
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+        };
+
+        stopBtn.onclick = () => {
+            mediaRecorder.stop();
+            status.innerText = "Grabación lista para enviar.";
+            stopBtn.disabled = true;
+            recordBtn.disabled = false;
+        };
+
+        uploadBtn.onclick = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+                const base64Data = reader.result.split(',')[1];
+                status.innerText = "Enviando a Google Drive... espera.";
+                uploadBtn.disabled = true;
+
+                fetch(scriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necesario para Google Apps Script
+                    cache: 'no-cache',
+                    body: JSON.stringify({
+                        audio: base64Data,
+                        userName: "Alumno_Blackboard" // Puedes personalizar esto
+                    })
+                }).then(() => {
+                    status.innerText = "¡Enviado con éxito! Ya puedes cerrar esta ventana.";
+                }).catch(err => {
+                    status.innerText = "Error al enviar. Intenta de nuevo.";
+                    console.error(err);
+                });
+            };
+        };
+    </script>
+</div>
