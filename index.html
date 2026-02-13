@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grabadora Escolar</title>
     <style>
-        body { font-family: -apple-system, sans-serif; text-align: center; padding: 30px; background: #fdfdfd; }
-        .box { border: 2px solid #4f46e5; padding: 30px; border-radius: 20px; display: inline-block; background: white; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
-        button { padding: 18px 25px; margin: 10px; border: none; border-radius: 10px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f4f9; }
+        .box { border: 2px solid #4f46e5; padding: 25px; border-radius: 15px; display: inline-block; background: white; max-width: 350px; }
+        button { padding: 15px; margin: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; width: 80%; }
         #recordBtn { background: #ef4444; color: white; }
         #stopBtn { background: #3b82f6; color: white; }
-        #uploadBtn { background: #10b981; color: white; width: 100%; margin-top: 15px; }
-        button:disabled { background: #e5e7eb !important; color: #9ca3af; }
-        audio { display: block; margin: 25px auto; width: 100%; }
-        #status { font-weight: bold; color: #4b5563; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        #uploadBtn { background: #10b981; color: white; margin-top: 20px; }
+        button:disabled { background: #ccc !important; cursor: not-allowed; }
+        audio { display: block; margin: 20px auto; width: 100%; }
+        #status { font-weight: bold; color: #333; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <div id="status">Listo para empezar</div>
+    <div id="status">LISTO</div>
     
     <button id="recordBtn">🎤 GRABAR</button>
     <button id="stopBtn" disabled>⏹️ PARAR</button>
@@ -32,7 +32,7 @@
 <script>
     let mediaRecorder;
     let audioChunks = [];
-    // Tu URL de Google Apps Script ya integrada
+    // Tu URL de Google Apps Script
     const scriptURL = "https://script.google.com/macros/s/AKfycbxIpDmT4KBPNeKLCEa9JVqixS1zetpiRF2NXAoAsXPW5bY08gFa85uCukEywCCu_SI9mA/exec"; 
 
     const recordBtn = document.getElementById('recordBtn');
@@ -44,34 +44,26 @@
     recordBtn.onclick = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            let mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
             
-            // Lógica para iPad (Safari usa MP4, otros WebM)
-            let mimeType = 'audio/webm';
-            if (!MediaRecorder.isTypeSupported(mimeType)) {
-                mimeType = 'audio/mp4';
-            }
-
             mediaRecorder = new MediaRecorder(stream, { mimeType });
             audioChunks = [];
 
-            mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) audioChunks.push(e.data);
-            };
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
 
             mediaRecorder.onstop = () => {
                 const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
                 preview.src = URL.createObjectURL(blob);
-                preview.load(); // Esto arregla el error de reproducción en iPad
                 uploadBtn.disabled = false;
-                status.innerText = "✅ Grabación lista";
+                status.innerText = "✅ GRABACIÓN LISTA";
             };
 
             mediaRecorder.start();
-            status.innerText = "🔴 Grabando...";
+            status.innerText = "🔴 GRABANDO...";
             recordBtn.disabled = true;
             stopBtn.disabled = false;
         } catch (err) {
-            alert("Error: Asegúrate de permitir el micrófono.");
+            alert("Error al acceder al micrófono.");
         }
     };
 
@@ -82,27 +74,37 @@
         stopBtn.disabled = true;
     };
 
-    uploadBtn.onclick = () => {
-        status.innerText = "⏳ Enviando archivo...";
+    // ESTA ES LA FUNCIÓN QUE VAMOS A ASEGURAR:
+    uploadBtn.onclick = function() {
+        status.innerText = "⏳ ENVIANDO... ESPERE";
         uploadBtn.disabled = true;
         
         const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
         const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => {
+        
+        reader.onload = function(event) {
+            const base64Data = event.target.result.split(',')[1];
+            
             fetch(scriptURL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify({ 
-                    audio: reader.result.split(',')[1],
-                    type: mediaRecorder.mimeType,
-                    name: "iPad_User_" + new Date().getTime()
+                    audio: base64Data,
+                    type: mediaRecorder.mimeType
                 })
-            }).then(() => {
+            })
+            .then(function() {
                 status.innerText = "🚀 ¡ENVIADO CON ÉXITO!";
-                alert("¡Listo! Tu audio ha sido guardado.");
+                alert("¡Tu audio ha sido enviado!");
+            })
+            .catch(function(error) {
+                status.innerText = "❌ ERROR AL ENVIAR";
+                uploadBtn.disabled = false;
+                console.error(error);
             });
         };
+        
+        reader.readAsDataURL(blob);
     };
 </script>
 </body>
