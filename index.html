@@ -1,45 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grabadora de Audio Escolar</title>
-    <style>
-        :root { --primary: #4f46e5; --danger: #ef4444; --success: #10b981; --bg: #f9fafb; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
-        h2 { color: #1f2937; margin-bottom: 0.5rem; font-size: 1.5rem; }
-        p { color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem; }
-        .controls { display: flex; flex-direction: column; gap: 1rem; }
-        button { padding: 0.8rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        #recordBtn { background: var(--primary); color: white; }
-        #recordBtn.recording { background: var(--danger); animation: pulse 1.5s infinite; }
-        #stopBtn { background: #e5e7eb; color: #374151; }
-        #uploadBtn { background: var(--success); color: white; width: 100%; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
-        button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(110%); }
-        audio { width: 100%; margin: 1.5rem 0; border-radius: 0.5rem; }
-        .status-badge { font-size: 0.8rem; padding: 0.4rem 1rem; border-radius: 1rem; background: #f3f4f6; color: #4b5563; display: inline-block; margin-bottom: 1rem; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-    </style>
-</head>
-<body>
-
-<div class="card">
-    <div class="status-badge" id="status">Listo para grabar</div>
-    <h2>Laboratorio de Audio</h2>
-    <p>Graba tu respuesta y envíala directamente al profesor.</p>
-    
-    <div class="controls">
-        <button id="recordBtn">🎤 Comenzar Grabación</button>
-        <button id="stopBtn" disabled>⏹️ Detener</button>
-    </div>
-
-    <audio id="preview" controls></audio>
-
-    <button id="uploadBtn" disabled>📤 Enviar Grabación</button>
-</div>
-
 <script>
     let mediaRecorder;
     let audioChunks = [];
@@ -54,13 +12,27 @@
     recordBtn.onclick = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
+            
+            // --- CAMBIO CLAVE: DETECCIÓN DE FORMATO PARA APPLE ---
+            let mimeType = 'audio/webm';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'audio/mp4'; // Formato estándar de Apple
+            }
+
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
             audioChunks = [];
 
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) audioChunks.push(e.data);
+            };
+
             mediaRecorder.onstop = () => {
-                const blob = new Blob(audioChunks, { type: 'audio/webm' });
-                preview.src = URL.createObjectURL(blob);
+                // Creamos el archivo con el tipo de dato que el navegador grabó
+                const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                const audioUrl = URL.createObjectURL(blob);
+                preview.src = audioUrl;
+                preview.load(); // Forzamos al reproductor a leer el archivo
+                
                 uploadBtn.disabled = false;
                 status.innerText = "✅ Grabación lista";
                 status.style.background = "#dcfce7";
@@ -74,7 +46,7 @@
             status.innerText = "Grabando audio...";
             status.style.background = "#fee2e2";
         } catch (err) {
-            alert("Error al acceder al micrófono. Por favor, verifica los permisos.");
+            alert("Error: Asegúrate de dar permiso al micrófono.");
         }
     };
 
@@ -90,13 +62,18 @@
     uploadBtn.onclick = () => {
         status.innerText = "⏳ Subiendo...";
         uploadBtn.disabled = true;
+        
+        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
         const reader = new FileReader();
-        reader.readAsDataURL(new Blob(audioChunks));
+        reader.readAsDataURL(blob);
         reader.onloadend = () => {
             fetch(scriptURL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: JSON.stringify({ audio: reader.result.split(',')[1] })
+                body: JSON.stringify({ 
+                    audio: reader.result.split(',')[1],
+                    type: mediaRecorder.mimeType // Avisamos al script qué tipo de audio es
+                })
             }).then(() => {
                 status.innerText = "🚀 ¡Enviado con éxito!";
                 status.style.background = "#dcfce7";
@@ -105,5 +82,3 @@
         };
     };
 </script>
-</body>
-</html>
