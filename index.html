@@ -3,43 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grabadora Escolar</title>
+    <title>Voice Lab / Laboratorio de Voz</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f4f9; }
-        .box { border: 2px solid #4f46e5; padding: 25px; border-radius: 15px; display: inline-block; background: white; max-width: 350px; }
-        button { padding: 15px; margin: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; width: 80%; }
-        #recordBtn { background: #ef4444; color: white; }
-        #stopBtn { background: #3b82f6; color: white; }
-        #uploadBtn { background: #10b981; color: white; margin-top: 20px; }
-        button:disabled { background: #ccc !important; cursor: not-allowed; }
-        audio { display: block; margin: 20px auto; width: 100%; }
-        #status { font-weight: bold; color: #333; margin-bottom: 10px; }
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .header { margin-bottom: 2rem; }
+        .header h1 { font-size: 1.5rem; margin: 0; color: var(--primary); }
+        .header p { font-size: 0.9rem; color: #64748b; margin: 0.5rem 0; }
+
+        .timer {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1.5rem 0;
+            color: #334155;
+            display: none; /* Se activa al grabar */
+        }
+
+        .timer.active {
+            display: block;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.7; }
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        button {
+            padding: 1rem;
+            border: none;
+            border-radius: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        #recordBtn { background-color: var(--primary); color: white; }
+        #recordBtn:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        #recordBtn.recording { background-color: var(--danger); }
+
+        #stopBtn { background-color: #f1f5f9; color: #475569; }
+        #stopBtn:hover { background-color: #e2e8f0; }
+
+        #uploadBtn { 
+            background-color: var(--success); 
+            color: white; 
+            margin-top: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .status-msg {
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <div id="status">LISTO</div>
-    
-    <button id="recordBtn">🎤 GRABAR</button>
-    <button id="stopBtn" disabled>⏹️ PARAR</button>
-    
+<div class="container">
+    <div class="header">
+        <h1>Voice Lab 🎙️</h1>
+        <p>Record your audio / Graba tu audio</p>
+    </div>
+
+    <div id="timer" class="timer">00:00</div>
+
+    <div class="controls">
+        <button id="recordBtn">
+            <span id="btnIcon">🎤</span> 
+            <span id="btnText">Start Recording / Empezar</span>
+        </button>
+        <button id="stopBtn" disabled>⏹️ Stop / Detener</button>
+    </div>
+
     <audio id="preview" controls></audio>
-    
-    <button id="uploadBtn" disabled>📤 ENVIAR AL PROFESOR</button>
+
+    <div id="status" class="status-msg">Ready / Listo</div>
+
+    <button id="uploadBtn" disabled>📤 Send to Teacher / Enviar</button>
 </div>
 
 <script>
     let mediaRecorder;
     let audioChunks = [];
-    // Tu URL de Google Apps Script
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxIpDmT4KBPNeKLCEa9JVqixS1zetpiRF2NXAoAsXPW5bY08gFa85uCukEywCCu_SI9mA/exec"; 
+    let startTime;
+    let timerInterval;
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxIpDmT4KBPNeKLCEa9JVqixS1zetpiRF2NXAoAsXPW5bY08gFa85uCukEywCCu_SI9mA/exec";
 
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
     const uploadBtn = document.getElementById('uploadBtn');
     const status = document.getElementById('status');
+    const timerDisplay = document.getElementById('timer');
     const preview = document.getElementById('preview');
+
+    function updateTimer() {
+        const now = new Date();
+        const diff = new Date(now - startTime);
+        const mins = String(diff.getUTCMinutes()).padStart(2, '0');
+        const secs = String(diff.getUTCSeconds()).padStart(2, '0');
+        timerDisplay.innerText = `${mins}:${secs}`;
+    }
 
     recordBtn.onclick = async () => {
         try {
@@ -52,31 +171,41 @@
             mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
 
             mediaRecorder.onstop = () => {
+                clearInterval(timerInterval);
                 const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
                 preview.src = URL.createObjectURL(blob);
                 uploadBtn.disabled = false;
-                status.innerText = "✅ GRABACIÓN LISTA";
+                status.innerText = "✅ Done! / ¡Listo!";
+                status.style.color = "#16a34a";
             };
 
             mediaRecorder.start();
-            status.innerText = "🔴 GRABANDO...";
+            
+            // Iniciar cronómetro
+            startTime = new Date();
+            timerDisplay.innerText = "00:00";
+            timerDisplay.classList.add('active');
+            timerInterval = setInterval(updateTimer, 1000);
+
+            status.innerText = "🔴 Recording... / Grabando...";
+            status.style.color = "#dc2626";
             recordBtn.disabled = true;
             stopBtn.disabled = false;
         } catch (err) {
-            alert("Error al acceder al micrófono.");
+            alert("Please allow microphone access / Por favor permite el uso del micrófono");
         }
     };
 
     stopBtn.onclick = () => {
         mediaRecorder.stop();
         mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        timerDisplay.classList.remove('active');
         recordBtn.disabled = false;
         stopBtn.disabled = true;
     };
 
-    // ESTA ES LA FUNCIÓN QUE VAMOS A ASEGURAR:
     uploadBtn.onclick = function() {
-        status.innerText = "⏳ ENVIANDO... ESPERE";
+        status.innerText = "⏳ Sending... / Enviando...";
         uploadBtn.disabled = true;
         
         const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
@@ -84,26 +213,24 @@
         
         reader.onload = function(event) {
             const base64Data = event.target.result.split(',')[1];
-            
             fetch(scriptURL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify({ 
                     audio: base64Data,
-                    type: mediaRecorder.mimeType
+                    type: mediaRecorder.mimeType,
+                    name: "Student_" + new Date().toLocaleString()
                 })
             })
-            .then(function() {
-                status.innerText = "🚀 ¡ENVIADO CON ÉXITO!";
-                alert("¡Tu audio ha sido enviado!");
+            .then(() => {
+                status.innerText = "🚀 SENT! / ¡ENVIADO!";
+                alert("Success! Your audio has been sent. / ¡Éxito! Tu audio ha sido enviado.");
             })
-            .catch(function(error) {
-                status.innerText = "❌ ERROR AL ENVIAR";
+            .catch(() => {
+                status.innerText = "❌ Error. Try again / Intenta de nuevo";
                 uploadBtn.disabled = false;
-                console.error(error);
             });
         };
-        
         reader.readAsDataURL(blob);
     };
 </script>
