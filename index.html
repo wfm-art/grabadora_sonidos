@@ -2,29 +2,28 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Grabadora Pro a Drive</title>
+    <title>Grabadora Pro</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f4f9; }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; }
-        button { padding: 12px 25px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        #recordBtn { background: #d9534f; color: white; }
-        #stopBtn { background: #5bc0de; color: white; }
-        #uploadBtn { background: #5cb85c; color: white; }
-        button:disabled { background: #ccc !important; cursor: not-allowed; }
-        audio { display: block; margin: 20px auto; width: 300px; }
-        #status { color: #555; margin-top: 15px; font-style: italic; }
+        body { font-family: sans-serif; text-align: center; padding: 40px; background: #f0f2f5; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: inline-block; }
+        button { padding: 15px 25px; margin: 10px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
+        #recordBtn { background: #ff4b5c; color: white; }
+        #stopBtn { background: #4b7bec; color: white; }
+        #uploadBtn { background: #20bf6b; color: white; }
+        button:disabled { background: #ccc !important; }
+        audio { display: block; margin: 20px auto; width: 100%; }
+        #status { margin-top: 15px; color: #4a5568; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h3>🎤 Grabadora de Audio</h3>
-    <button id="recordBtn">Grabar</button>
+    <h3>🎤 Grabadora de Voz</h3>
+    <button id="recordBtn">Comenzar Grabación</button>
     <button id="stopBtn" disabled>Detener</button>
-    <button id="uploadBtn" disabled>Enviar a Drive</button>
-    
+    <button id="uploadBtn" disabled>Enviar a mi Profesor</button>
     <audio id="preview" controls></audio>
-    <div id="status">Listo para empezar</div>
+    <div id="status">Haz clic en "Comenzar"</div>
 </div>
 
 <script>
@@ -40,47 +39,59 @@
 
     recordBtn.onclick = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // FORZAMOS configuración de audio básica para evitar silencios
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                } 
+            });
             
-            // Detectar formato soportado (WebM para Chrome/Edge, MP4 para Safari)
-            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+            // Verificamos si el navegador soporta WebM, si no, usamos el por defecto
+            const options = { mimeType: 'audio/webm' };
+            if (!MediaRecorder.isTypeSupported('audio/webm')) {
+                delete options.mimeType;
+            }
+
+            mediaRecorder = new MediaRecorder(stream, options);
             
-            mediaRecorder = new MediaRecorder(stream, { mimeType });
-            
-            mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) audioChunks.push(e.data);
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                }
             };
 
             mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: mimeType });
-                const audioUrl = URL.createObjectURL(audioBlob);
-                preview.src = audioUrl;
+                const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                const url = URL.createObjectURL(blob);
+                preview.src = url;
                 uploadBtn.disabled = false;
-                status.innerText = "Grabación finalizada. Escúchala antes de enviar.";
+                status.innerText = "✅ Grabación terminada. Prueba el sonido.";
             };
 
             audioChunks = [];
-            mediaRecorder.start();
-            status.innerText = "🔴 Grabando... hable ahora.";
+            // Solicitamos datos cada 200ms para asegurar captura constante
+            mediaRecorder.start(200); 
+            
+            status.innerText = "🔴 GRABANDO...";
             recordBtn.disabled = true;
             stopBtn.disabled = false;
-            uploadBtn.disabled = true;
         } catch (err) {
-            status.innerText = "Error: No se pudo acceder al micrófono.";
+            status.innerText = "❌ ERROR: No se pudo conectar el micro.";
             console.error(err);
         }
     };
 
     stopBtn.onclick = () => {
         mediaRecorder.stop();
-        // Detener el micrófono físicamente para liberar el hardware
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
         recordBtn.disabled = false;
         stopBtn.disabled = true;
     };
 
     uploadBtn.onclick = () => {
-        status.innerText = "⏳ Subiendo archivo a Drive...";
+        status.innerText = "⏳ Subiendo archivo...";
         uploadBtn.disabled = true;
 
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -88,19 +99,13 @@
         reader.readAsDataURL(audioBlob);
         reader.onloadend = () => {
             const base64Data = reader.result.split(',')[1];
-            
             fetch(scriptURL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: JSON.stringify({
-                    audio: base64Data,
-                    userName: "Alumno_Blackboard_" + Math.floor(Math.random() * 1000)
-                })
+                body: JSON.stringify({ audio: base64Data, userName: "Alumno_Prueba" })
             }).then(() => {
-                status.innerText = "✅ ¡Enviado con éxito! Ya puedes cerrar.";
-            }).catch(err => {
-                status.innerText = "❌ Error al enviar.";
-                uploadBtn.disabled = false;
+                status.innerText = "🚀 ¡ENVIADO!";
+                alert("Enviado con éxito.");
             });
         };
     };
