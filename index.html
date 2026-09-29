@@ -1,439 +1,1846 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Voice Lab / Laboratorio de Voz</title>
+<title>Voice Lab / Laboratorio de Voz</title>
 
-    <style>
-        :root {
-            --primary: #6366f1;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --bg: #f8fafc;
-            --text: #1e293b;
-            --muted: #64748b;
-            --border: #e2e8f0;
-        }
+<style>
 
-        * {
-            box-sizing: border-box;
-        }
+:root {
+    --primary: #5b5ff5;
+    --primary-dark: #4549e8;
+    --primary-soft: #eef0ff;
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
+    --danger: #ef4444;
+    --danger-dark: #dc2626;
+    --danger-soft: #fff1f2;
 
-        .container {
-            background: white;
-            padding: 2.3rem;
-            border-radius: 2rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 430px;
-            text-align: center;
-        }
+    --success: #22c55e;
+    --success-dark: #15803d;
+    --success-soft: #f0fdf4;
 
-        h1 {
-            margin: 0;
-            color: var(--primary);
-        }
+    --bg: #f5f7fb;
+    --card: #ffffff;
 
-        .subtitle {
-            color: var(--muted);
-            margin: 5px 0 20px;
-        }
+    --text: #172033;
+    --muted: #64748b;
+    --border: #e2e8f0;
 
-        /* ACTIVITY */
+    --shadow:
+        0 24px 60px rgba(15, 23, 42, .10),
+        0 4px 14px rgba(15, 23, 42, .04);
+}
 
-        .activity-box {
-            margin: 18px 0;
-            padding: 14px;
-            background: #eef2ff;
-            border: 1px solid #c7d2fe;
-            border-radius: 14px;
-            text-align: left;
-        }
 
-        .activity-label {
-            color: var(--muted);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: .05em;
-            text-transform: uppercase;
-        }
+/* =========================================================
+   BASE
+   ========================================================= */
 
-        .activity-name {
-            margin-top: 5px;
-            color: var(--primary);
-            font-size: 17px;
-            font-weight: 800;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        .activity-path {
-            margin-top: 5px;
-            color: #475569;
-            font-size: 11px;
-            line-height: 1.4;
-        }
+html,
+body {
+    min-height: 100%;
+}
 
-        /* NAME */
+body {
+    margin: 0;
+    padding: 24px;
 
-        .name-section {
-            margin: 18px 0;
-            text-align: left;
-        }
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-        .name-label {
-            display: block;
-            margin-bottom: 7px;
-            color: var(--text);
-            font-size: 13px;
-            font-weight: 800;
-        }
+    background:
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(99,102,241,.055),
+            transparent 36%
+        ),
+        var(--bg);
 
-        #studentName {
-            width: 100%;
-            padding: 13px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 11px;
-            outline: none;
-            font-size: 16px;
-        }
+    color: var(--text);
 
-        #studentName:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
-        }
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+}
 
-        .name-help {
-            margin-top: 6px;
-            color: var(--muted);
-            font-size: 11px;
-        }
 
-        /* TIMER */
+/* =========================================================
+   APP
+   ========================================================= */
 
-        .timer {
-            display: none;
-            font-family: monospace;
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin: 1rem 0;
-            color: var(--text);
-        }
+.app {
+    width: 100%;
+    max-width: 440px;
+}
 
-        .timer.active {
-            display: block;
-            animation: blink 1s infinite;
-        }
 
-        @keyframes blink {
-            50% {
-                opacity: 0.7;
-            }
-        }
+.container {
+    position: relative;
+    overflow: hidden;
 
-        /* CONTROLS */
+    width: 100%;
 
-        .controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
+    padding: 34px 36px 32px;
 
-        button {
-            width: 100%;
-            max-width: 280px;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 650;
-            cursor: pointer;
-            transition: transform .2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
+    background: rgba(255,255,255,.98);
 
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-        }
+    border:
+        1px solid rgba(226,232,240,.8);
 
-        button:disabled {
-            opacity: .42;
-            cursor: not-allowed;
-        }
+    border-radius: 30px;
 
-        #recordBtn {
-            background: var(--primary);
-            color: white;
-        }
+    box-shadow:
+        var(--shadow);
 
-        #recordBtn.recording {
-            background: var(--danger);
-        }
+    text-align: center;
+}
 
-        #stopBtn {
-            background: #f1f5f9;
-            color: #475569;
-        }
 
-        /* REVIEW */
+/* subtle top glow */
 
-        .review-area {
-            display: none;
-            margin-top: 18px;
-            padding-top: 18px;
-            border-top: 1px solid var(--border);
-        }
+.container::before {
+    content: "";
 
-        .review-title {
-            margin-bottom: 4px;
-            color: var(--text);
-            font-size: 15px;
-            font-weight: 800;
-        }
+    position: absolute;
 
-        .review-help {
-            margin-bottom: 4px;
-            color: var(--muted);
-            font-size: 12px;
-        }
+    top: -120px;
+    left: 50%;
 
-        audio {
-            width: 100%;
-            margin: 16px 0;
-            border-radius: 8px;
-        }
+    width: 320px;
+    height: 180px;
 
-        .review-actions {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
+    transform:
+        translateX(-50%);
 
-        #recordAgainBtn {
-            background: #f1f5f9;
-            color: #334155;
-            border: 1px solid #cbd5e1;
-        }
+    background:
+        radial-gradient(
+            circle,
+            rgba(99,102,241,.12),
+            transparent 70%
+        );
 
-        #uploadBtn {
-            background: var(--success);
-            color: white;
-        }
+    pointer-events: none;
+}
 
-        .choice-label {
-            margin: 2px 0;
-            color: var(--muted);
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-        }
 
-        /* STATUS */
+/* =========================================================
+   BRAND
+   ========================================================= */
 
-        .status-msg {
-            min-height: 22px;
-            font-size: .9rem;
-            font-weight: bold;
-            margin-top: 14px;
-        }
+.brand {
+    position: relative;
+    z-index: 2;
 
-        .error-box {
-            padding: 18px;
-            border: 1px solid #fecaca;
-            border-radius: 14px;
-            background: #fef2f2;
-            color: #b91c1c;
-            font-weight: 700;
-        }
+    margin-bottom: 22px;
+}
 
-        .success-box {
-            display: none;
-            margin-top: 18px;
-            padding: 18px;
-            border: 1px solid #bbf7d0;
-            border-radius: 14px;
-            background: #f0fdf4;
-            color: #15803d;
-            font-weight: 800;
-        }
-    </style>
+
+.brand-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+}
+
+
+h1 {
+    margin: 0;
+
+    color: var(--primary);
+
+    font-size: 32px;
+    line-height: 1;
+
+    letter-spacing: -.035em;
+}
+
+
+.brand-mic {
+    display: inline-flex;
+
+    font-size: 27px;
+
+    transform-origin: center bottom;
+}
+
+
+.subtitle {
+    margin-top: 8px;
+
+    color: var(--muted);
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   LOADING EXPERIENCE
+   ========================================================= */
+
+.loading-stage {
+    padding: 20px 4px 10px;
+
+    animation:
+        fadeIn .35s ease both;
+}
+
+
+.loader-orb {
+    position: relative;
+
+    width: 86px;
+    height: 86px;
+
+    margin:
+        0 auto 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.loader-ring {
+    position: absolute;
+
+    inset: 0;
+
+    border:
+        1px solid rgba(99,102,241,.18);
+
+    border-radius: 50%;
+
+    animation:
+        pulseRing 2s ease-out infinite;
+}
+
+
+.loader-ring.two {
+    animation-delay: 1s;
+}
+
+
+.loader-core {
+    position: relative;
+    z-index: 2;
+
+    width: 62px;
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 21px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #6f72ff,
+            #5054ed
+        );
+
+    color: white;
+
+    font-size: 28px;
+
+    box-shadow:
+        0 14px 28px
+        rgba(79,70,229,.25);
+
+    animation:
+        loaderFloat 2.2s ease-in-out infinite;
+}
+
+
+.loading-title {
+    color: var(--text);
+
+    font-size: 16px;
+    font-weight: 800;
+}
+
+
+.loading-subtitle {
+    margin-top: 6px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+}
+
+
+.loading-wave {
+    height: 34px;
+
+    margin-top: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+}
+
+
+.loading-wave span {
+    width: 4px;
+
+    border-radius: 999px;
+
+    background: var(--primary);
+
+    animation:
+        loadingWave 1s ease-in-out infinite;
+}
+
+
+.loading-wave span:nth-child(1) {
+    height: 8px;
+    animation-delay: 0s;
+}
+
+.loading-wave span:nth-child(2) {
+    height: 15px;
+    animation-delay: .08s;
+}
+
+.loading-wave span:nth-child(3) {
+    height: 24px;
+    animation-delay: .16s;
+}
+
+.loading-wave span:nth-child(4) {
+    height: 14px;
+    animation-delay: .24s;
+}
+
+.loading-wave span:nth-child(5) {
+    height: 28px;
+    animation-delay: .32s;
+}
+
+.loading-wave span:nth-child(6) {
+    height: 17px;
+    animation-delay: .40s;
+}
+
+.loading-wave span:nth-child(7) {
+    height: 10px;
+    animation-delay: .48s;
+}
+
+
+/* =========================================================
+   RECORDER ENTRY
+   ========================================================= */
+
+#recorderArea {
+    display: none;
+}
+
+
+#recorderArea.visible {
+    display: block;
+
+    animation:
+        recorderEnter .55s
+        cubic-bezier(.2,.8,.2,1)
+        both;
+}
+
+
+/* =========================================================
+   ACTIVITY
+   ========================================================= */
+
+.activity-box {
+    position: relative;
+
+    margin-bottom: 22px;
+
+    padding: 15px 16px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f5f6ff,
+            #eef1ff
+        );
+
+    border:
+        1px solid #cdd3ff;
+
+    border-radius: 16px;
+
+    text-align: left;
+}
+
+
+.activity-box::after {
+    content: "";
+
+    position: absolute;
+
+    top: -45px;
+    right: -35px;
+
+    width: 120px;
+    height: 120px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(99,102,241,.07);
+}
+
+
+.activity-label {
+    position: relative;
+    z-index: 1;
+
+    color: var(--muted);
+
+    font-size: 10px;
+    font-weight: 850;
+
+    letter-spacing: .075em;
+
+    text-transform: uppercase;
+}
+
+
+.activity-name {
+    position: relative;
+    z-index: 1;
+
+    margin-top: 5px;
+
+    color: var(--primary-dark);
+
+    font-size: 17px;
+    font-weight: 850;
+}
+
+
+.activity-path {
+    position: relative;
+    z-index: 1;
+
+    margin-top: 5px;
+
+    color: #475569;
+
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   NAME
+   ========================================================= */
+
+.name-section {
+    margin-bottom: 22px;
+
+    text-align: left;
+}
+
+
+.name-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--text);
+
+    font-size: 12px;
+    font-weight: 850;
+
+    letter-spacing: .025em;
+}
+
+
+.input-wrap {
+    position: relative;
+}
+
+
+#studentName {
+    width: 100%;
+
+    padding:
+        14px 45px 14px 14px;
+
+    border:
+        1px solid #cbd5e1;
+
+    border-radius: 13px;
+
+    outline: none;
+
+    background: #fff;
+
+    color: var(--text);
+
+    font-size: 16px;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+}
+
+
+#studentName:focus {
+    border-color:
+        var(--primary);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(99,102,241,.10);
+}
+
+
+#studentName:disabled {
+    background: #f8fafc;
+}
+
+
+.name-check {
+    position: absolute;
+
+    top: 50%;
+    right: 14px;
+
+    width: 23px;
+    height: 23px;
+
+    transform:
+        translateY(-50%)
+        scale(.75);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        var(--success-soft);
+
+    color:
+        var(--success-dark);
+
+    font-size: 13px;
+    font-weight: 900;
+
+    opacity: 0;
+
+    transition:
+        opacity .2s ease,
+        transform .2s ease;
+}
+
+
+.name-check.visible {
+    opacity: 1;
+
+    transform:
+        translateY(-50%)
+        scale(1);
+}
+
+
+.name-help {
+    margin-top: 7px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   READY INDICATOR
+   ========================================================= */
+
+.ready-pill {
+    width: fit-content;
+
+    margin:
+        0 auto 18px;
+
+    padding:
+        7px 12px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    border:
+        1px solid #bbf7d0;
+
+    border-radius: 999px;
+
+    background:
+        var(--success-soft);
+
+    color:
+        var(--success-dark);
+
+    font-size: 11px;
+    font-weight: 850;
+
+    opacity: 0;
+
+    transform:
+        translateY(4px);
+
+    transition:
+        opacity .25s ease,
+        transform .25s ease;
+}
+
+
+.ready-pill.visible {
+    opacity: 1;
+
+    transform:
+        translateY(0);
+}
+
+
+.ready-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background:
+        var(--success);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(34,197,94,.12);
+}
+
+
+/* =========================================================
+   RECORDING STAGE
+   ========================================================= */
+
+.recording-stage {
+    display: none;
+
+    margin:
+        4px 0 20px;
+
+    padding:
+        22px 12px 18px;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fff7f7,
+            #fff
+        );
+
+    border:
+        1px solid #fee2e2;
+}
+
+
+.recording-stage.active {
+    display: block;
+
+    animation:
+        stageEnter .3s ease both;
+}
+
+
+.recording-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    color:
+        var(--danger-dark);
+
+    font-size: 11px;
+    font-weight: 850;
+
+    letter-spacing: .06em;
+
+    text-transform: uppercase;
+}
+
+
+.recording-dot {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background:
+        var(--danger);
+
+    animation:
+        recordingPulse 1.4s ease-in-out infinite;
+}
+
+
+.timer {
+    margin:
+        9px 0 13px;
+
+    color:
+        var(--text);
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    font-size: 48px;
+    font-weight: 750;
+
+    line-height: 1;
+
+    letter-spacing: -.06em;
+}
+
+
+.live-wave {
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+}
+
+
+.live-wave span {
+    width: 4px;
+
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fb7185,
+            #ef4444
+        );
+
+    animation:
+        voiceWave .75s ease-in-out infinite alternate;
+}
+
+
+.live-wave span:nth-child(1) {
+    height: 10px;
+    animation-delay: .05s;
+}
+
+.live-wave span:nth-child(2) {
+    height: 22px;
+    animation-delay: .15s;
+}
+
+.live-wave span:nth-child(3) {
+    height: 35px;
+    animation-delay: .25s;
+}
+
+.live-wave span:nth-child(4) {
+    height: 18px;
+    animation-delay: .35s;
+}
+
+.live-wave span:nth-child(5) {
+    height: 42px;
+    animation-delay: .10s;
+}
+
+.live-wave span:nth-child(6) {
+    height: 26px;
+    animation-delay: .30s;
+}
+
+.live-wave span:nth-child(7) {
+    height: 38px;
+    animation-delay: .20s;
+}
+
+.live-wave span:nth-child(8) {
+    height: 16px;
+    animation-delay: .40s;
+}
+
+.live-wave span:nth-child(9) {
+    height: 30px;
+    animation-delay: .12s;
+}
+
+.live-wave span:nth-child(10) {
+    height: 12px;
+    animation-delay: .28s;
+}
+
+.live-wave span:nth-child(11) {
+    height: 25px;
+    animation-delay: .18s;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 11px;
+}
+
+
+button {
+    width: 100%;
+
+    padding: 14px 18px;
+
+    border: none;
+    border-radius: 13px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    font-family: inherit;
+
+    font-size: 15px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        opacity .18s ease;
+}
+
+
+button:hover:not(:disabled) {
+    transform:
+        translateY(-1px);
+}
+
+
+button:active:not(:disabled) {
+    transform:
+        translateY(0)
+        scale(.99);
+}
+
+
+button:disabled {
+    opacity: .40;
+
+    cursor: not-allowed;
+
+    box-shadow: none !important;
+}
+
+
+#recordBtn {
+    max-width: 300px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #6669fa,
+            #5357ee
+        );
+
+    color: white;
+
+    box-shadow:
+        0 10px 22px
+        rgba(79,70,229,.20);
+}
+
+
+#recordBtn:hover:not(:disabled) {
+    box-shadow:
+        0 13px 26px
+        rgba(79,70,229,.27);
+}
+
+
+#stopBtn {
+    max-width: 300px;
+
+    background:
+        #fff;
+
+    border:
+        1px solid #fecaca;
+
+    color:
+        var(--danger-dark);
+}
+
+
+#stopBtn:not(:disabled) {
+    background:
+        var(--danger);
+
+    border-color:
+        var(--danger);
+
+    color: white;
+
+    box-shadow:
+        0 9px 20px
+        rgba(239,68,68,.18);
+}
+
+
+/* =========================================================
+   REVIEW
+   ========================================================= */
+
+.review-area {
+    display: none;
+
+    margin-top: 22px;
+
+    padding-top: 22px;
+
+    border-top:
+        1px solid var(--border);
+}
+
+
+.review-area.visible {
+    display: block;
+
+    animation:
+        reviewEnter .4s
+        cubic-bezier(.2,.8,.2,1)
+        both;
+}
+
+
+.review-badge {
+    width: 48px;
+    height: 48px;
+
+    margin:
+        0 auto 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 16px;
+
+    background:
+        var(--success-soft);
+
+    color:
+        var(--success-dark);
+
+    font-size: 23px;
+}
+
+
+.review-title {
+    color: var(--text);
+
+    font-size: 17px;
+    font-weight: 850;
+}
+
+
+.review-help {
+    margin-top: 5px;
+
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+
+audio {
+    width: 100%;
+
+    margin:
+        18px 0 17px;
+}
+
+
+.review-actions {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+#recordAgainBtn {
+    background: #fff;
+
+    color: #334155;
+
+    border:
+        1px solid #cbd5e1;
+}
+
+
+#recordAgainBtn:hover:not(:disabled) {
+    background:
+        #f8fafc;
+
+    box-shadow:
+        0 6px 16px
+        rgba(15,23,42,.07);
+}
+
+
+.choice-row {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin:
+        1px 0;
+}
+
+
+.choice-row::before,
+.choice-row::after {
+    content: "";
+
+    flex: 1;
+
+    height: 1px;
+
+    background:
+        var(--border);
+}
+
+
+.choice-label {
+    color:
+        #94a3b8;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: .06em;
+}
+
+
+#uploadBtn {
+    background:
+        linear-gradient(
+            135deg,
+            #28c967,
+            #20b85b
+        );
+
+    color: white;
+
+    box-shadow:
+        0 10px 22px
+        rgba(34,197,94,.20);
+}
+
+
+#uploadBtn:hover:not(:disabled) {
+    box-shadow:
+        0 13px 26px
+        rgba(34,197,94,.27);
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.status-msg {
+    min-height: 20px;
+
+    margin-top: 16px;
+
+    color:
+        var(--muted);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.error-box {
+    padding: 20px;
+
+    border:
+        1px solid #fecaca;
+
+    border-radius: 16px;
+
+    background:
+        #fef2f2;
+
+    color:
+        #b91c1c;
+
+    font-weight: 750;
+
+    line-height: 1.45;
+
+    animation:
+        stageEnter .35s ease both;
+}
+
+
+/* =========================================================
+   SUCCESS
+   ========================================================= */
+
+.success-box {
+    display: none;
+
+    margin-top: 22px;
+
+    padding: 26px 20px;
+
+    border:
+        1px solid #bbf7d0;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #f0fdf4,
+            #f8fff9
+        );
+
+    color:
+        var(--success-dark);
+}
+
+
+.success-box.visible {
+    display: block;
+
+    animation:
+        successEnter .55s
+        cubic-bezier(.2,.9,.2,1)
+        both;
+}
+
+
+.success-icon {
+    width: 58px;
+    height: 58px;
+
+    margin:
+        0 auto 14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        var(--success);
+
+    color: white;
+
+    font-size: 27px;
+
+    box-shadow:
+        0 10px 24px
+        rgba(34,197,94,.22);
+}
+
+
+.success-title {
+    font-size: 18px;
+    font-weight: 900;
+}
+
+
+.success-subtitle {
+    margin-top: 5px;
+
+    color:
+        #3f6f4e;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes fadeIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
+@keyframes pulseRing {
+
+    0% {
+        transform:
+            scale(.72);
+
+        opacity: .75;
+    }
+
+    75% {
+        transform:
+            scale(1.18);
+
+        opacity: 0;
+    }
+
+    100% {
+        transform:
+            scale(1.18);
+
+        opacity: 0;
+    }
+
+}
+
+
+@keyframes loaderFloat {
+
+    0%,
+    100% {
+        transform:
+            translateY(0);
+    }
+
+    50% {
+        transform:
+            translateY(-5px);
+    }
+
+}
+
+
+@keyframes loadingWave {
+
+    0%,
+    100% {
+        transform:
+            scaleY(.45);
+
+        opacity: .45;
+    }
+
+    50% {
+        transform:
+            scaleY(1);
+
+        opacity: 1;
+    }
+
+}
+
+
+@keyframes recorderEnter {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+
+}
+
+
+@keyframes stageEnter {
+
+    from {
+        opacity: 0;
+
+        transform:
+            scale(.98);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            scale(1);
+    }
+
+}
+
+
+@keyframes recordingPulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 0 0
+            rgba(239,68,68,.25);
+    }
+
+    50% {
+        box-shadow:
+            0 0 0 7px
+            rgba(239,68,68,0);
+    }
+
+}
+
+
+@keyframes voiceWave {
+
+    from {
+        transform:
+            scaleY(.35);
+
+        opacity: .65;
+    }
+
+    to {
+        transform:
+            scaleY(1);
+
+        opacity: 1;
+    }
+
+}
+
+
+@keyframes reviewEnter {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+
+}
+
+
+@keyframes successEnter {
+
+    0% {
+        opacity: 0;
+
+        transform:
+            translateY(12px)
+            scale(.96);
+    }
+
+    70% {
+        transform:
+            translateY(-2px)
+            scale(1.01);
+    }
+
+    100% {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+
+    body {
+        padding: 14px;
+    }
+
+    .container {
+        padding:
+            29px 22px 27px;
+
+        border-radius: 26px;
+    }
+
+    h1 {
+        font-size: 29px;
+    }
+
+    .timer {
+        font-size: 45px;
+    }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration:
+            .01ms !important;
+
+        animation-iteration-count:
+            1 !important;
+
+        transition-duration:
+            .01ms !important;
+    }
+
+}
+
+</style>
 </head>
+
 
 <body>
 
+<div class="app">
+
 <div class="container">
 
-    <h1>Voice Lab 🎙️</h1>
-    <div class="subtitle">English / Español</div>
+
+    <!-- BRAND -->
+
+    <div class="brand">
+
+        <div class="brand-main">
+
+            <h1>
+                Voice Lab
+            </h1>
+
+            <span class="brand-mic">
+                🎙️
+            </span>
+
+        </div>
+
+        <div class="subtitle">
+            English / Español
+        </div>
+
+    </div>
+
 
 
     <!-- LOADING -->
 
-    <div id="loadingActivity" class="activity-box">
-        Loading activity... / Cargando actividad...
+    <div
+        id="loadingActivity"
+        class="loading-stage"
+    >
+
+        <div class="loader-orb">
+
+            <div class="loader-ring"></div>
+
+            <div class="loader-ring two"></div>
+
+            <div class="loader-core">
+                🎙️
+            </div>
+
+        </div>
+
+
+        <div class="loading-title">
+
+            Preparing Voice Lab
+
+        </div>
+
+
+        <div class="loading-subtitle">
+
+            Preparando tu espacio de grabación...
+
+        </div>
+
+
+        <div class="loading-wave">
+
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </div>
+
     </div>
+
 
 
     <!-- INVALID LINK -->
 
-    <div id="invalidActivity"
-         class="error-box"
-         style="display:none;">
+    <div
+        id="invalidActivity"
+        class="error-box"
+        style="display:none;"
+    >
 
         ❌ This recording link is invalid or no longer active.
+
         <br><br>
+
         Este enlace de grabación no es válido o ya no está activo.
 
     </div>
 
 
+
     <!-- RECORDER -->
 
-    <div id="recorderArea" style="display:none;">
+    <div id="recorderArea">
 
 
-        <!-- ACTIVITY INFORMATION -->
+        <!-- ACTIVITY -->
 
         <div class="activity-box">
 
             <div class="activity-label">
-                Recording activity / Actividad de grabación
+
+                Recording activity /
+                Actividad de grabación
+
             </div>
 
-            <div id="activityName"
-                 class="activity-name">
-            </div>
 
-            <div id="activityPath"
-                 class="activity-path">
-            </div>
+            <div
+                id="activityName"
+                class="activity-name"
+            ></div>
+
+
+            <div
+                id="activityPath"
+                class="activity-path"
+            ></div>
 
         </div>
 
 
-        <!-- STUDENT NAME -->
+
+        <!-- NAME -->
 
         <div class="name-section">
 
-            <label class="name-label"
-                   for="studentName">
+            <label
+                class="name-label"
+                for="studentName"
+            >
 
                 YOUR NAME / TU NOMBRE
 
             </label>
 
-            <input
-                id="studentName"
-                type="text"
-                maxlength="80"
-                autocomplete="name"
-                placeholder="First and Last Name / Nombre y apellido"
-            >
+
+            <div class="input-wrap">
+
+                <input
+                    id="studentName"
+                    type="text"
+                    maxlength="80"
+                    autocomplete="name"
+                    placeholder=
+                    "First and Last Name / Nombre y apellido"
+                >
+
+
+                <div
+                    id="nameCheck"
+                    class="name-check"
+                >
+
+                    ✓
+
+                </div>
+
+            </div>
+
 
             <div class="name-help">
+
                 Required before recording /
                 Obligatorio antes de grabar
+
             </div>
 
         </div>
 
 
-        <!-- TIMER -->
 
-        <div id="timer"
-             class="timer">
+        <!-- READY -->
 
-            00:00
+        <div
+            id="readyPill"
+            class="ready-pill"
+        >
+
+            <span class="ready-dot"></span>
+
+            READY / LISTO
 
         </div>
+
+
+
+        <!-- RECORDING STAGE -->
+
+        <div
+            id="recordingStage"
+            class="recording-stage"
+        >
+
+            <div class="recording-label">
+
+                <span class="recording-dot"></span>
+
+                RECORDING / GRABANDO
+
+            </div>
+
+
+            <div
+                id="timer"
+                class="timer"
+            >
+
+                00:00
+
+            </div>
+
+
+            <div class="live-wave">
+
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </div>
+
+        </div>
+
 
 
         <!-- RECORD CONTROLS -->
 
-        <div class="controls"
-             id="recordControls">
+        <div
+            class="controls"
+            id="recordControls"
+        >
 
-            <button id="recordBtn"
-                    disabled>
+            <button
+                id="recordBtn"
+                type="button"
+                disabled
+            >
 
                 🎤
-                <span>Start / Empezar</span>
+
+                <span>
+                    Start Recording /
+                    Empezar a grabar
+                </span>
 
             </button>
 
-            <button id="stopBtn"
-                    disabled>
 
-                ⏹️ Stop / Detener
+            <button
+                id="stopBtn"
+                type="button"
+                disabled
+            >
+
+                ⏹
+
+                <span>
+                    Stop / Detener
+                </span>
 
             </button>
 
         </div>
 
 
-        <!-- REVIEW AREA -->
 
-        <div id="reviewArea"
-             class="review-area">
+        <!-- REVIEW -->
+
+        <div
+            id="reviewArea"
+            class="review-area"
+        >
+
+            <div class="review-badge">
+                🎧
+            </div>
+
 
             <div class="review-title">
-                Listen before sending / Escucha antes de enviar
+
+                Listen before sending
+
             </div>
+
 
             <div class="review-help">
-                Is your recording ready? / ¿Está lista tu grabación?
+
+                Escucha tu grabación antes de enviarla
+
             </div>
 
-            <audio id="preview"
-                   controls>
-            </audio>
+
+            <audio
+                id="preview"
+                controls
+            ></audio>
+
 
             <div class="review-actions">
 
-                <button id="recordAgainBtn"
-                        type="button">
 
-                    🔄 Record Again / Grabar de nuevo
+                <button
+                    id="recordAgainBtn"
+                    type="button"
+                >
+
+                    🔄
+
+                    <span>
+                        Record Again /
+                        Grabar de nuevo
+                    </span>
 
                 </button>
 
-                <div class="choice-label">
-                    OR / O
+
+                <div class="choice-row">
+
+                    <span class="choice-label">
+                        OR / O
+                    </span>
+
                 </div>
 
-                <button id="uploadBtn"
-                        type="button">
 
-                    📤 Send / Enviar
+                <button
+                    id="uploadBtn"
+                    type="button"
+                >
+
+                    📤
+
+                    <span>
+                        Send Recording /
+                        Enviar grabación
+                    </span>
 
                 </button>
+
 
             </div>
 
         </div>
+
 
 
         <!-- STATUS -->
 
-        <div id="status"
-             class="status-msg">
+        <div
+            id="status"
+            class="status-msg"
+        >
 
             Enter your name to begin /
             Escribe tu nombre para comenzar
@@ -441,20 +1848,41 @@
         </div>
 
 
+
         <!-- SUCCESS -->
 
-        <div id="successBox"
-             class="success-box">
+        <div
+            id="successBox"
+            class="success-box"
+        >
 
-            ✅ Recording submitted!
-            <br>
-            ¡Grabación enviada!
+            <div class="success-icon">
+                ✓
+            </div>
+
+
+            <div class="success-title">
+
+                Recording submitted!
+
+            </div>
+
+
+            <div class="success-subtitle">
+
+                ¡Grabación enviada correctamente!
+
+            </div>
 
         </div>
+
 
     </div>
 
 </div>
+
+</div>
+
 
 
 <script>
@@ -472,14 +1900,19 @@ const SCRIPT_URL =
    ========================================================= */
 
 let mediaRecorder = null;
+
 let audioChunks = [];
+
 let currentBlob = null;
+
 let currentPreviewUrl = null;
 
 let startTime = null;
+
 let timerInterval = null;
 
 let activityLoaded = false;
+
 let submitted = false;
 
 
@@ -488,35 +1921,97 @@ let submitted = false;
    ========================================================= */
 
 const recordBtn =
-    document.getElementById("recordBtn");
+    document.getElementById(
+        "recordBtn"
+    );
+
 
 const stopBtn =
-    document.getElementById("stopBtn");
+    document.getElementById(
+        "stopBtn"
+    );
+
 
 const recordAgainBtn =
-    document.getElementById("recordAgainBtn");
+    document.getElementById(
+        "recordAgainBtn"
+    );
+
 
 const uploadBtn =
-    document.getElementById("uploadBtn");
+    document.getElementById(
+        "uploadBtn"
+    );
+
 
 const status =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
+
 
 const timerDisplay =
-    document.getElementById("timer");
+    document.getElementById(
+        "timer"
+    );
+
 
 const preview =
-    document.getElementById("preview");
+    document.getElementById(
+        "preview"
+    );
+
 
 const reviewArea =
-    document.getElementById("reviewArea");
+    document.getElementById(
+        "reviewArea"
+    );
+
 
 const studentName =
-    document.getElementById("studentName");
+    document.getElementById(
+        "studentName"
+    );
+
+
+const recorderArea =
+    document.getElementById(
+        "recorderArea"
+    );
+
+
+const loadingActivity =
+    document.getElementById(
+        "loadingActivity"
+    );
+
+
+const recordingStage =
+    document.getElementById(
+        "recordingStage"
+    );
+
+
+const readyPill =
+    document.getElementById(
+        "readyPill"
+    );
+
+
+const nameCheck =
+    document.getElementById(
+        "nameCheck"
+    );
+
+
+const successBox =
+    document.getElementById(
+        "successBox"
+    );
 
 
 /* =========================================================
-   GET ACTIVITY TOKEN FROM URL
+   TOKEN
    ========================================================= */
 
 const params =
@@ -524,9 +2019,12 @@ const params =
         window.location.search
     );
 
+
 const activityToken =
     (
-        params.get("activity") || ""
+        params.get(
+            "activity"
+        ) || ""
     ).trim();
 
 
@@ -539,6 +2037,7 @@ async function loadActivity() {
     if (!activityToken) {
 
         showInvalidActivity();
+
         return;
 
     }
@@ -555,7 +2054,9 @@ async function loadActivity() {
 
 
         const response =
-            await fetch(url);
+            await fetch(
+                url
+            );
 
 
         if (!response.ok) {
@@ -573,7 +2074,8 @@ async function loadActivity() {
 
         if (
             !data ||
-            data.result !== "success"
+            data.result !==
+                "success"
         ) {
 
             throw new Error(
@@ -583,23 +2085,8 @@ async function loadActivity() {
         }
 
 
-        activityLoaded = true;
-
-
-        document
-            .getElementById(
-                "loadingActivity"
-            )
-            .style.display =
-                "none";
-
-
-        document
-            .getElementById(
-                "recorderArea"
-            )
-            .style.display =
-                "block";
+        activityLoaded =
+            true;
 
 
         document
@@ -615,16 +2102,67 @@ async function loadActivity() {
                 "activityPath"
             )
             .textContent =
-                (data.path || [])
-                    .join(" › ");
+                (
+                    data.path ||
+                    []
+                )
+                .join(
+                    " › "
+                );
 
 
-        updateRecordAvailability();
+        /*
+         * Transition:
+         * Preparing -> Ready
+         */
+
+        loadingActivity
+            .style
+            .opacity =
+                "0";
+
+
+        loadingActivity
+            .style
+            .transform =
+                "translateY(-6px)";
+
+
+        loadingActivity
+            .style
+            .transition =
+                "opacity .25s ease, transform .25s ease";
+
+
+        setTimeout(
+            function () {
+
+                loadingActivity
+                    .style
+                    .display =
+                        "none";
+
+
+                recorderArea
+                    .classList
+                    .add(
+                        "visible"
+                    );
+
+
+                updateRecordAvailability();
+
+            },
+            240
+        );
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
+
 
         showInvalidActivity();
 
@@ -639,19 +2177,15 @@ async function loadActivity() {
 
 function showInvalidActivity() {
 
-    document
-        .getElementById(
-            "loadingActivity"
-        )
-        .style.display =
+    loadingActivity
+        .style
+        .display =
             "none";
 
 
-    document
-        .getElementById(
-            "recorderArea"
-        )
-        .style.display =
+    recorderArea
+        .style
+        .display =
             "none";
 
 
@@ -659,7 +2193,8 @@ function showInvalidActivity() {
         .getElementById(
             "invalidActivity"
         )
-        .style.display =
+        .style
+        .display =
             "block";
 
 }
@@ -683,25 +2218,51 @@ function validStudentName() {
 
 function updateRecordAvailability() {
 
+    const validName =
+        validStudentName();
+
+
+    nameCheck
+        .classList
+        .toggle(
+            "visible",
+            validName
+        );
+
+
+    readyPill
+        .classList
+        .toggle(
+            "visible",
+            validName &&
+            activityLoaded &&
+            !submitted &&
+            !currentBlob
+        );
+
+
     if (
         submitted ||
         !activityLoaded
     ) {
 
-        recordBtn.disabled = true;
+        recordBtn.disabled =
+            true;
+
         return;
 
     }
 
 
     recordBtn.disabled =
-        !validStudentName();
+        !validName;
 
 
-    if (validStudentName()) {
+    if (validName) {
 
         status.textContent =
-            "Ready / Listo";
+            "Ready to record / " +
+            "Listo para grabar";
 
     } else {
 
@@ -714,10 +2275,11 @@ function updateRecordAvailability() {
 }
 
 
-studentName.addEventListener(
-    "input",
-    updateRecordAvailability
-);
+studentName
+    .addEventListener(
+        "input",
+        updateRecordAvailability
+    );
 
 
 /* =========================================================
@@ -740,36 +2302,50 @@ function updateTimer() {
     const minutes =
         String(
             Math.floor(
-                totalSeconds / 60
+                totalSeconds /
+                60
             )
-        ).padStart(2, "0");
+        )
+        .padStart(
+            2,
+            "0"
+        );
 
 
     const seconds =
         String(
-            totalSeconds % 60
-        ).padStart(2, "0");
+            totalSeconds %
+            60
+        )
+        .padStart(
+            2,
+            "0"
+        );
 
 
-    timerDisplay.textContent =
-        minutes +
-        ":" +
-        seconds;
+    timerDisplay
+        .textContent =
+            minutes +
+            ":" +
+            seconds;
 
 }
 
 
 /* =========================================================
-   CLEAN PREVIOUS PREVIEW
+   CLEAR PREVIEW
    ========================================================= */
 
 function clearPreview() {
 
-    if (currentPreviewUrl) {
+    if (
+        currentPreviewUrl
+    ) {
 
         URL.revokeObjectURL(
             currentPreviewUrl
         );
+
 
         currentPreviewUrl =
             null;
@@ -779,9 +2355,11 @@ function clearPreview() {
 
     preview.pause();
 
+
     preview.removeAttribute(
         "src"
     );
+
 
     preview.load();
 
@@ -815,8 +2393,22 @@ recordBtn.onclick =
             clearPreview();
 
 
+            reviewArea
+                .classList
+                .remove(
+                    "visible"
+                );
+
+
             reviewArea.style.display =
                 "none";
+
+
+            readyPill
+                .classList
+                .remove(
+                    "visible"
+                );
 
 
             const stream =
@@ -827,7 +2419,8 @@ recordBtn.onclick =
                     });
 
 
-            let options = {};
+            let options =
+                {};
 
 
             if (
@@ -860,98 +2453,124 @@ recordBtn.onclick =
                 );
 
 
-            audioChunks = [];
-            currentBlob = null;
+            audioChunks =
+                [];
 
 
-            mediaRecorder.ondataavailable =
-                function (event) {
+            currentBlob =
+                null;
 
-                    if (
-                        event.data &&
-                        event.data.size > 0
+
+            mediaRecorder
+                .ondataavailable =
+                    function (
+                        event
                     ) {
 
-                        audioChunks.push(
-                            event.data
+                        if (
+                            event.data &&
+                            event.data.size >
+                                0
+                        ) {
+
+                            audioChunks.push(
+                                event.data
+                            );
+
+                        }
+
+                    };
+
+
+            mediaRecorder
+                .onstop =
+                    function () {
+
+                        clearInterval(
+                            timerInterval
                         );
 
-                    }
 
-                };
-
-
-            mediaRecorder.onstop =
-                function () {
-
-                    clearInterval(
-                        timerInterval
-                    );
+                        timerInterval =
+                            null;
 
 
-                    timerInterval =
-                        null;
+                        currentBlob =
+                            new Blob(
+                                audioChunks,
+                                {
+                                    type:
+                                        mediaRecorder
+                                            .mimeType
+                                }
+                            );
 
 
-                    currentBlob =
-                        new Blob(
-                            audioChunks,
-                            {
-                                type:
-                                    mediaRecorder.mimeType
+                        currentPreviewUrl =
+                            URL.createObjectURL(
+                                currentBlob
+                            );
+
+
+                        preview.src =
+                            currentPreviewUrl;
+
+
+                        recordingStage
+                            .classList
+                            .remove(
+                                "active"
+                            );
+
+
+                        reviewArea.style.display =
+                            "block";
+
+
+                        /*
+                         * Force browser to register
+                         * display:block before entrance
+                         * animation.
+                         */
+
+                        requestAnimationFrame(
+                            function () {
+
+                                reviewArea
+                                    .classList
+                                    .add(
+                                        "visible"
+                                    );
+
                             }
                         );
 
 
-                    currentPreviewUrl =
-                        URL.createObjectURL(
-                            currentBlob
-                        );
+                        studentName.disabled =
+                            false;
 
 
-                    preview.src =
-                        currentPreviewUrl;
+                        recordBtn.disabled =
+                            true;
 
 
-                    reviewArea.style.display =
-                        "block";
+                        stopBtn.disabled =
+                            true;
 
 
-                    studentName.disabled =
-                        false;
+                        recordAgainBtn.disabled =
+                            false;
 
 
-                    timerDisplay
-                        .classList
-                        .remove("active");
+                        uploadBtn.disabled =
+                            false;
 
 
-                    recordBtn
-                        .classList
-                        .remove("recording");
+                        status.textContent =
+                            "Recording complete / " +
+                            "Grabación terminada";
 
-
-                    recordBtn.disabled =
-                        true;
-
-
-                    stopBtn.disabled =
-                        true;
-
-
-                    recordAgainBtn.disabled =
-                        false;
-
-
-                    uploadBtn.disabled =
-                        false;
-
-
-                    status.textContent =
-                        "✅ Done! Listen, then send or record again. / " +
-                        "¡Listo! Escucha y luego envía o graba de nuevo.";
-
-                };
+                    };
 
 
             mediaRecorder.start();
@@ -965,9 +2584,11 @@ recordBtn.onclick =
                 "00:00";
 
 
-            timerDisplay
+            recordingStage
                 .classList
-                .add("active");
+                .add(
+                    "active"
+                );
 
 
             timerInterval =
@@ -981,17 +2602,13 @@ recordBtn.onclick =
                 true;
 
 
-            recordBtn
-                .classList
-                .add("recording");
-
-
             stopBtn.disabled =
                 false;
 
 
             status.textContent =
-                "🔴 Recording... / Grabando...";
+                "Recording in progress / " +
+                "Grabación en curso";
 
 
         } catch (error) {
@@ -1000,6 +2617,13 @@ recordBtn.onclick =
                 "Microphone error:",
                 error
             );
+
+
+            recordingStage
+                .classList
+                .remove(
+                    "active"
+                );
 
 
             studentName.disabled =
@@ -1041,10 +2665,13 @@ stopBtn.onclick =
         mediaRecorder.stop();
 
 
-        mediaRecorder.stream
+        mediaRecorder
+            .stream
             .getTracks()
             .forEach(
-                function (track) {
+                function (
+                    track
+                ) {
 
                     track.stop();
 
@@ -1054,6 +2681,11 @@ stopBtn.onclick =
 
         stopBtn.disabled =
             true;
+
+
+        status.textContent =
+            "Preparing your recording... / " +
+            "Preparando tu grabación...";
 
     };
 
@@ -1074,11 +2706,6 @@ recordAgainBtn.onclick =
         }
 
 
-        /*
-         * Discard ONLY the current recording.
-         * Student name is intentionally preserved.
-         */
-
         clearPreview();
 
 
@@ -1094,13 +2721,22 @@ recordAgainBtn.onclick =
             null;
 
 
+        reviewArea
+            .classList
+            .remove(
+                "visible"
+            );
+
+
         reviewArea.style.display =
             "none";
 
 
-        timerDisplay
+        recordingStage
             .classList
-            .remove("active");
+            .remove(
+                "active"
+            );
 
 
         timerDisplay.textContent =
@@ -1119,17 +2755,20 @@ recordAgainBtn.onclick =
             true;
 
 
-        /*
-         * IMPORTANT:
-         * Keep student's name.
-         */
-
         studentName.disabled =
             false;
 
 
         recordBtn.disabled =
             !validStudentName();
+
+
+        readyPill
+            .classList
+            .toggle(
+                "visible",
+                validStudentName()
+            );
 
 
         status.textContent =
@@ -1175,7 +2814,8 @@ uploadBtn.onclick =
 
 
         status.textContent =
-            "⏳ Sending... / Enviando...";
+            "Sending your recording... / " +
+            "Enviando tu grabación...";
 
 
         const reader =
@@ -1183,10 +2823,13 @@ uploadBtn.onclick =
 
 
         reader.onload =
-            function (event) {
+            function (
+                event
+            ) {
 
                 const base64Data =
-                    event.target.result
+                    event.target
+                        .result
                         .split(",")[1];
 
 
@@ -1215,14 +2858,18 @@ uploadBtn.onclick =
                 fetch(
                     SCRIPT_URL,
                     {
-                        method: "POST",
 
-                        mode: "no-cors",
+                        method:
+                            "POST",
+
+                        mode:
+                            "no-cors",
 
                         body:
                             JSON.stringify(
                                 payload
                             )
+
                     }
                 )
 
@@ -1233,25 +2880,29 @@ uploadBtn.onclick =
                             true;
 
 
-                        status.textContent =
-                            "🚀 SENT! / ¡ENVIADO!";
+                        reviewArea
+                            .classList
+                            .remove(
+                                "visible"
+                            );
 
-
-                        document
-                            .getElementById(
-                                "successBox"
-                            )
-                            .style.display =
-                                "block";
-
-
-                        /*
-                         * After successful submission,
-                         * both choices disappear.
-                         */
 
                         reviewArea.style.display =
                             "none";
+
+
+                        readyPill
+                            .classList
+                            .remove(
+                                "visible"
+                            );
+
+
+                        recordingStage
+                            .classList
+                            .remove(
+                                "active"
+                            );
 
 
                         recordBtn.disabled =
@@ -1265,11 +2916,24 @@ uploadBtn.onclick =
                         studentName.disabled =
                             true;
 
+
+                        status.textContent =
+                            "Submitted / Enviado";
+
+
+                        successBox
+                            .classList
+                            .add(
+                                "visible"
+                            );
+
                     }
                 )
 
                 .catch(
-                    function (error) {
+                    function (
+                        error
+                    ) {
 
                         console.error(
                             "Upload error:",
@@ -1278,7 +2942,8 @@ uploadBtn.onclick =
 
 
                         status.textContent =
-                            "❌ Send error / Error al enviar";
+                            "❌ Send error / " +
+                            "Error al enviar";
 
 
                         uploadBtn.disabled =
