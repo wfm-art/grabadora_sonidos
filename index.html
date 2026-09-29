@@ -190,23 +190,68 @@
             color: #475569;
         }
 
-        #uploadBtn {
-            background: var(--success);
-            color: white;
-            margin-top: 10px;
+        /* REVIEW */
+
+        .review-area {
+            display: none;
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+        }
+
+        .review-title {
+            margin-bottom: 4px;
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .review-help {
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 12px;
         }
 
         audio {
             width: 100%;
-            margin: 20px 0;
+            margin: 16px 0;
             border-radius: 8px;
         }
+
+        .review-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #recordAgainBtn {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+
+        #uploadBtn {
+            background: var(--success);
+            color: white;
+        }
+
+        .choice-label {
+            margin: 2px 0;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        /* STATUS */
 
         .status-msg {
             min-height: 22px;
             font-size: .9rem;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 14px;
         }
 
         .error-box {
@@ -227,17 +272,6 @@
             background: #f0fdf4;
             color: #15803d;
             font-weight: 800;
-        }
-
-        .warning-box {
-            margin-bottom: 18px;
-            padding: 12px;
-            border: 1px solid #fde68a;
-            border-radius: 12px;
-            background: #fffbeb;
-            color: #92400e;
-            font-size: 12px;
-            line-height: 1.4;
         }
     </style>
 </head>
@@ -333,7 +367,8 @@
 
         <!-- RECORD CONTROLS -->
 
-        <div class="controls">
+        <div class="controls"
+             id="recordControls">
 
             <button id="recordBtn"
                     disabled>
@@ -353,12 +388,46 @@
         </div>
 
 
-        <!-- AUDIO PREVIEW -->
+        <!-- REVIEW AREA -->
 
-        <audio id="preview"
-               controls
-               style="display:none;">
-        </audio>
+        <div id="reviewArea"
+             class="review-area">
+
+            <div class="review-title">
+                Listen before sending / Escucha antes de enviar
+            </div>
+
+            <div class="review-help">
+                Is your recording ready? / ¿Está lista tu grabación?
+            </div>
+
+            <audio id="preview"
+                   controls>
+            </audio>
+
+            <div class="review-actions">
+
+                <button id="recordAgainBtn"
+                        type="button">
+
+                    🔄 Record Again / Grabar de nuevo
+
+                </button>
+
+                <div class="choice-label">
+                    OR / O
+                </div>
+
+                <button id="uploadBtn"
+                        type="button">
+
+                    📤 Send / Enviar
+
+                </button>
+
+            </div>
+
+        </div>
 
 
         <!-- STATUS -->
@@ -368,20 +437,6 @@
 
             Enter your name to begin /
             Escribe tu nombre para comenzar
-
-        </div>
-
-
-        <!-- SEND -->
-
-        <div class="controls">
-
-            <button id="uploadBtn"
-                    disabled>
-
-                📤 Send / Enviar
-
-            </button>
 
         </div>
 
@@ -405,19 +460,8 @@
 <script>
 
 /* =========================================================
-   IMPORTANT
-   =========================================================
-
-   Replace ONLY the value below with your current
-   Google Apps Script Web App /exec URL.
-
-   Example:
-
-   const SCRIPT_URL =
-     "https://script.google.com/macros/s/XXXXX/exec";
-
+   APPS SCRIPT
    ========================================================= */
-
 
 const SCRIPT_URL =
     "https://script.google.com/macros/s/AKfycbxIpDmT4KBPNeKLCEa9JVqixS1zetpiRF2NXAoAsXPW5bY08gFa85uCukEywCCu_SI9mA/exec";
@@ -430,6 +474,7 @@ const SCRIPT_URL =
 let mediaRecorder = null;
 let audioChunks = [];
 let currentBlob = null;
+let currentPreviewUrl = null;
 
 let startTime = null;
 let timerInterval = null;
@@ -448,6 +493,9 @@ const recordBtn =
 const stopBtn =
     document.getElementById("stopBtn");
 
+const recordAgainBtn =
+    document.getElementById("recordAgainBtn");
+
 const uploadBtn =
     document.getElementById("uploadBtn");
 
@@ -459,6 +507,9 @@ const timerDisplay =
 
 const preview =
     document.getElementById("preview");
+
+const reviewArea =
+    document.getElementById("reviewArea");
 
 const studentName =
     document.getElementById("studentName");
@@ -709,6 +760,35 @@ function updateTimer() {
 
 
 /* =========================================================
+   CLEAN PREVIOUS PREVIEW
+   ========================================================= */
+
+function clearPreview() {
+
+    if (currentPreviewUrl) {
+
+        URL.revokeObjectURL(
+            currentPreviewUrl
+        );
+
+        currentPreviewUrl =
+            null;
+
+    }
+
+
+    preview.pause();
+
+    preview.removeAttribute(
+        "src"
+    );
+
+    preview.load();
+
+}
+
+
+/* =========================================================
    START RECORDING
    ========================================================= */
 
@@ -730,6 +810,13 @@ recordBtn.onclick =
 
             studentName.disabled =
                 true;
+
+
+            clearPreview();
+
+
+            reviewArea.style.display =
+                "none";
 
 
             const stream =
@@ -777,14 +864,6 @@ recordBtn.onclick =
             currentBlob = null;
 
 
-            preview.style.display =
-                "none";
-
-
-            uploadBtn.disabled =
-                true;
-
-
             mediaRecorder.ondataavailable =
                 function (event) {
 
@@ -810,6 +889,10 @@ recordBtn.onclick =
                     );
 
 
+                    timerInterval =
+                        null;
+
+
                     currentBlob =
                         new Blob(
                             audioChunks,
@@ -820,18 +903,18 @@ recordBtn.onclick =
                         );
 
 
-                    preview.src =
+                    currentPreviewUrl =
                         URL.createObjectURL(
                             currentBlob
                         );
 
 
-                    preview.style.display =
+                    preview.src =
+                        currentPreviewUrl;
+
+
+                    reviewArea.style.display =
                         "block";
-
-
-                    uploadBtn.disabled =
-                        false;
 
 
                     studentName.disabled =
@@ -849,16 +932,24 @@ recordBtn.onclick =
 
 
                     recordBtn.disabled =
-                        false;
+                        true;
 
 
                     stopBtn.disabled =
                         true;
 
 
+                    recordAgainBtn.disabled =
+                        false;
+
+
+                    uploadBtn.disabled =
+                        false;
+
+
                     status.textContent =
-                        "✅ Done! Listen before sending. / " +
-                        "¡Listo! Escucha antes de enviar.";
+                        "✅ Done! Listen, then send or record again. / " +
+                        "¡Listo! Escucha y luego envía o graba de nuevo.";
 
                 };
 
@@ -968,6 +1059,87 @@ stopBtn.onclick =
 
 
 /* =========================================================
+   RECORD AGAIN
+   ========================================================= */
+
+recordAgainBtn.onclick =
+    function () {
+
+        if (
+            submitted
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+         * Discard ONLY the current recording.
+         * Student name is intentionally preserved.
+         */
+
+        clearPreview();
+
+
+        audioChunks =
+            [];
+
+
+        currentBlob =
+            null;
+
+
+        mediaRecorder =
+            null;
+
+
+        reviewArea.style.display =
+            "none";
+
+
+        timerDisplay
+            .classList
+            .remove("active");
+
+
+        timerDisplay.textContent =
+            "00:00";
+
+
+        stopBtn.disabled =
+            true;
+
+
+        recordAgainBtn.disabled =
+            true;
+
+
+        uploadBtn.disabled =
+            true;
+
+
+        /*
+         * IMPORTANT:
+         * Keep student's name.
+         */
+
+        studentName.disabled =
+            false;
+
+
+        recordBtn.disabled =
+            !validStudentName();
+
+
+        status.textContent =
+            "Ready to record again / " +
+            "Listo para grabar de nuevo";
+
+    };
+
+
+/* =========================================================
    SEND RECORDING
    ========================================================= */
 
@@ -987,6 +1159,10 @@ uploadBtn.onclick =
 
 
         uploadBtn.disabled =
+            true;
+
+
+        recordAgainBtn.disabled =
             true;
 
 
@@ -1069,7 +1245,12 @@ uploadBtn.onclick =
                                 "block";
 
 
-                        uploadBtn.style.display =
+                        /*
+                         * After successful submission,
+                         * both choices disappear.
+                         */
+
+                        reviewArea.style.display =
                             "none";
 
 
@@ -1104,11 +1285,12 @@ uploadBtn.onclick =
                             false;
 
 
-                        studentName.disabled =
+                        recordAgainBtn.disabled =
                             false;
 
 
-                        updateRecordAvailability();
+                        studentName.disabled =
+                            false;
 
                     }
                 );
