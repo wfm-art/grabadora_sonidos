@@ -3,13 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Voice Lab / Laboratorio de Voz</title>
+
     <style>
         :root {
             --primary: #6366f1;
             --danger: #ef4444;
             --success: #22c55e;
             --bg: #f8fafc;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
@@ -25,147 +34,1102 @@
 
         .container {
             background: white;
-            padding: 2.5rem;
+            padding: 2.3rem;
             border-radius: 2rem;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 430px;
             text-align: center;
         }
 
+        h1 {
+            margin: 0;
+            color: var(--primary);
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin: 5px 0 20px;
+        }
+
+        /* ACTIVITY */
+
+        .activity-box {
+            margin: 18px 0;
+            padding: 14px;
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            border-radius: 14px;
+            text-align: left;
+        }
+
+        .activity-label {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
+        .activity-name {
+            margin-top: 5px;
+            color: var(--primary);
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .activity-path {
+            margin-top: 5px;
+            color: #475569;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        /* NAME */
+
+        .name-section {
+            margin: 18px 0;
+            text-align: left;
+        }
+
+        .name-label {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        #studentName {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 11px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        #studentName:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
+        }
+
+        .name-help {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        /* TIMER */
+
         .timer {
+            display: none;
             font-family: monospace;
             font-size: 3.5rem;
             font-weight: bold;
             margin: 1rem 0;
-            color: #1e293b;
-            display: none;
+            color: var(--text);
         }
 
-        .timer.active { display: block; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.7; } }
+        .timer.active {
+            display: block;
+            animation: blink 1s infinite;
+        }
 
-        /* --- AJUSTE DE BOTONES --- */
+        @keyframes blink {
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* CONTROLS */
+
         .controls {
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centra los botones */
+            align-items: center;
             gap: 12px;
         }
 
         button {
             width: 100%;
-            max-width: 280px; /* No ocupan todo el ancho */
+            max-width: 280px;
             padding: 14px;
             border: none;
             border-radius: 12px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 650;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform .2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
 
-        #recordBtn { background: var(--primary); color: white; }
-        #recordBtn.recording { background: var(--danger); }
-        #stopBtn { background: #f1f5f9; color: #475569; }
-        #uploadBtn { background: var(--success); color: white; margin-top: 10px; }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
 
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        button:hover:not(:disabled) { transform: translateY(-2px); }
+        button:disabled {
+            opacity: .42;
+            cursor: not-allowed;
+        }
 
-        audio { width: 100%; margin: 20px 0; border-radius: 8px; }
-        .status-msg { font-size: 0.9rem; font-weight: bold; margin-top: 10px; }
+        #recordBtn {
+            background: var(--primary);
+            color: white;
+        }
+
+        #recordBtn.recording {
+            background: var(--danger);
+        }
+
+        #stopBtn {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        #uploadBtn {
+            background: var(--success);
+            color: white;
+            margin-top: 10px;
+        }
+
+        audio {
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .status-msg {
+            min-height: 22px;
+            font-size: .9rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .error-box {
+            padding: 18px;
+            border: 1px solid #fecaca;
+            border-radius: 14px;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-weight: 700;
+        }
+
+        .success-box {
+            display: none;
+            margin-top: 18px;
+            padding: 18px;
+            border: 1px solid #bbf7d0;
+            border-radius: 14px;
+            background: #f0fdf4;
+            color: #15803d;
+            font-weight: 800;
+        }
+
+        .warning-box {
+            margin-bottom: 18px;
+            padding: 12px;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            background: #fffbeb;
+            color: #92400e;
+            font-size: 12px;
+            line-height: 1.4;
+        }
     </style>
 </head>
+
 <body>
 
 <div class="container">
-    <h1 style="margin:0; color:var(--primary)">Voice Lab 🎙️</h1>
-    <p style="color:#64748b; margin-bottom:20px;">English / Español</p>
 
-    <div id="timer" class="timer">00:00</div>
+    <h1>Voice Lab 🎙️</h1>
+    <div class="subtitle">English / Español</div>
 
-    <div class="controls">
-        <button id="recordBtn">🎤 <span id="btnText">Start / Empezar</span></button>
-        <button id="stopBtn" disabled>⏹️ Stop / Detener</button>
+
+    <!-- LOADING -->
+
+    <div id="loadingActivity" class="activity-box">
+        Loading activity... / Cargando actividad...
     </div>
 
-    <audio id="preview" controls></audio>
 
-    <div id="status" class="status-msg">Ready / Listo</div>
+    <!-- INVALID LINK -->
 
-    <div class="controls">
-        <button id="uploadBtn" disabled>📤 Send / Enviar</button>
+    <div id="invalidActivity"
+         class="error-box"
+         style="display:none;">
+
+        ❌ This recording link is invalid or no longer active.
+        <br><br>
+        Este enlace de grabación no es válido o ya no está activo.
+
     </div>
+
+
+    <!-- RECORDER -->
+
+    <div id="recorderArea" style="display:none;">
+
+
+        <!-- ACTIVITY INFORMATION -->
+
+        <div class="activity-box">
+
+            <div class="activity-label">
+                Recording activity / Actividad de grabación
+            </div>
+
+            <div id="activityName"
+                 class="activity-name">
+            </div>
+
+            <div id="activityPath"
+                 class="activity-path">
+            </div>
+
+        </div>
+
+
+        <!-- STUDENT NAME -->
+
+        <div class="name-section">
+
+            <label class="name-label"
+                   for="studentName">
+
+                YOUR NAME / TU NOMBRE
+
+            </label>
+
+            <input
+                id="studentName"
+                type="text"
+                maxlength="80"
+                autocomplete="name"
+                placeholder="First and Last Name / Nombre y apellido"
+            >
+
+            <div class="name-help">
+                Required before recording /
+                Obligatorio antes de grabar
+            </div>
+
+        </div>
+
+
+        <!-- TIMER -->
+
+        <div id="timer"
+             class="timer">
+
+            00:00
+
+        </div>
+
+
+        <!-- RECORD CONTROLS -->
+
+        <div class="controls">
+
+            <button id="recordBtn"
+                    disabled>
+
+                🎤
+                <span>Start / Empezar</span>
+
+            </button>
+
+            <button id="stopBtn"
+                    disabled>
+
+                ⏹️ Stop / Detener
+
+            </button>
+
+        </div>
+
+
+        <!-- AUDIO PREVIEW -->
+
+        <audio id="preview"
+               controls
+               style="display:none;">
+        </audio>
+
+
+        <!-- STATUS -->
+
+        <div id="status"
+             class="status-msg">
+
+            Enter your name to begin /
+            Escribe tu nombre para comenzar
+
+        </div>
+
+
+        <!-- SEND -->
+
+        <div class="controls">
+
+            <button id="uploadBtn"
+                    disabled>
+
+                📤 Send / Enviar
+
+            </button>
+
+        </div>
+
+
+        <!-- SUCCESS -->
+
+        <div id="successBox"
+             class="success-box">
+
+            ✅ Recording submitted!
+            <br>
+            ¡Grabación enviada!
+
+        </div>
+
+    </div>
+
 </div>
 
-<script>
-    /* ... (Mantenemos el mismo JavaScript que ya funcionaba bien) ... */
-    let mediaRecorder; let audioChunks = []; let startTime; let timerInterval;
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxIpDmT4KBPNeKLCEa9JVqixS1zetpiRF2NXAoAsXPW5bY08gFa85uCukEywCCu_SI9mA/exec";
-    const recordBtn = document.getElementById('recordBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const status = document.getElementById('status');
-    const timerDisplay = document.getElementById('timer');
-    const preview = document.getElementById('preview');
 
-    function updateTimer() {
-        const now = new Date();
-        const diff = new Date(now - startTime);
-        const mins = String(diff.getUTCMinutes()).padStart(2, '0');
-        const secs = String(diff.getUTCSeconds()).padStart(2, '0');
-        timerDisplay.innerText = `${mins}:${secs}`;
+<script>
+
+/* =========================================================
+   IMPORTANT
+   =========================================================
+
+   Replace ONLY the value below with your current
+   Google Apps Script Web App /exec URL.
+
+   Example:
+
+   const SCRIPT_URL =
+     "https://script.google.com/macros/s/XXXXX/exec";
+
+   ========================================================= */
+
+
+const SCRIPT_URL =
+    "https://script.google.com/macros/s/AKfycbxIpDmT4KBPNeKLCEa9JVqixS1zetpiRF2NXAoAsXPW5bY08gFa85uCukEywCCu_SI9mA/exec";
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let mediaRecorder = null;
+let audioChunks = [];
+let currentBlob = null;
+
+let startTime = null;
+let timerInterval = null;
+
+let activityLoaded = false;
+let submitted = false;
+
+
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+const recordBtn =
+    document.getElementById("recordBtn");
+
+const stopBtn =
+    document.getElementById("stopBtn");
+
+const uploadBtn =
+    document.getElementById("uploadBtn");
+
+const status =
+    document.getElementById("status");
+
+const timerDisplay =
+    document.getElementById("timer");
+
+const preview =
+    document.getElementById("preview");
+
+const studentName =
+    document.getElementById("studentName");
+
+
+/* =========================================================
+   GET ACTIVITY TOKEN FROM URL
+   ========================================================= */
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const activityToken =
+    (
+        params.get("activity") || ""
+    ).trim();
+
+
+/* =========================================================
+   LOAD ACTIVITY
+   ========================================================= */
+
+async function loadActivity() {
+
+    if (!activityToken) {
+
+        showInvalidActivity();
+        return;
+
     }
 
-    recordBtn.onclick = async () => {
+
+    try {
+
+        const url =
+            SCRIPT_URL +
+            "?api=activity&token=" +
+            encodeURIComponent(
+                activityToken
+            );
+
+
+        const response =
+            await fetch(url);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Activity lookup failed."
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data ||
+            data.result !== "success"
+        ) {
+
+            throw new Error(
+                "Invalid activity."
+            );
+
+        }
+
+
+        activityLoaded = true;
+
+
+        document
+            .getElementById(
+                "loadingActivity"
+            )
+            .style.display =
+                "none";
+
+
+        document
+            .getElementById(
+                "recorderArea"
+            )
+            .style.display =
+                "block";
+
+
+        document
+            .getElementById(
+                "activityName"
+            )
+            .textContent =
+                data.activityName;
+
+
+        document
+            .getElementById(
+                "activityPath"
+            )
+            .textContent =
+                (data.path || [])
+                    .join(" › ");
+
+
+        updateRecordAvailability();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showInvalidActivity();
+
+    }
+
+}
+
+
+/* =========================================================
+   INVALID ACTIVITY
+   ========================================================= */
+
+function showInvalidActivity() {
+
+    document
+        .getElementById(
+            "loadingActivity"
+        )
+        .style.display =
+            "none";
+
+
+    document
+        .getElementById(
+            "recorderArea"
+        )
+        .style.display =
+            "none";
+
+
+    document
+        .getElementById(
+            "invalidActivity"
+        )
+        .style.display =
+            "block";
+
+}
+
+
+/* =========================================================
+   STUDENT NAME
+   ========================================================= */
+
+function validStudentName() {
+
+    return (
+        studentName
+            .value
+            .trim()
+            .length >= 2
+    );
+
+}
+
+
+function updateRecordAvailability() {
+
+    if (
+        submitted ||
+        !activityLoaded
+    ) {
+
+        recordBtn.disabled = true;
+        return;
+
+    }
+
+
+    recordBtn.disabled =
+        !validStudentName();
+
+
+    if (validStudentName()) {
+
+        status.textContent =
+            "Ready / Listo";
+
+    } else {
+
+        status.textContent =
+            "Enter your name to begin / " +
+            "Escribe tu nombre para comenzar";
+
+    }
+
+}
+
+
+studentName.addEventListener(
+    "input",
+    updateRecordAvailability
+);
+
+
+/* =========================================================
+   TIMER
+   ========================================================= */
+
+function updateTimer() {
+
+    const elapsed =
+        Date.now() -
+        startTime;
+
+
+    const totalSeconds =
+        Math.floor(
+            elapsed / 1000
+        );
+
+
+    const minutes =
+        String(
+            Math.floor(
+                totalSeconds / 60
+            )
+        ).padStart(2, "0");
+
+
+    const seconds =
+        String(
+            totalSeconds % 60
+        ).padStart(2, "0");
+
+
+    timerDisplay.textContent =
+        minutes +
+        ":" +
+        seconds;
+
+}
+
+
+/* =========================================================
+   START RECORDING
+   ========================================================= */
+
+recordBtn.onclick =
+    async function () {
+
+        if (
+            !activityLoaded ||
+            !validStudentName() ||
+            submitted
+        ) {
+
+            return;
+
+        }
+
+
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            let mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
-            mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+            studentName.disabled =
+                true;
+
+
+            const stream =
+                await navigator
+                    .mediaDevices
+                    .getUserMedia({
+                        audio: true
+                    });
+
+
+            let options = {};
+
+
+            if (
+                MediaRecorder
+                    .isTypeSupported(
+                        "audio/webm"
+                    )
+            ) {
+
+                options.mimeType =
+                    "audio/webm";
+
+            } else if (
+                MediaRecorder
+                    .isTypeSupported(
+                        "audio/mp4"
+                    )
+            ) {
+
+                options.mimeType =
+                    "audio/mp4";
+
+            }
+
+
+            mediaRecorder =
+                new MediaRecorder(
+                    stream,
+                    options
+                );
+
+
             audioChunks = [];
-            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-            mediaRecorder.onstop = () => {
-                clearInterval(timerInterval);
-                const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-                preview.src = URL.createObjectURL(blob);
-                uploadBtn.disabled = false;
-                status.innerText = "✅ Done! / ¡Listo!";
-            };
+            currentBlob = null;
+
+
+            preview.style.display =
+                "none";
+
+
+            uploadBtn.disabled =
+                true;
+
+
+            mediaRecorder.ondataavailable =
+                function (event) {
+
+                    if (
+                        event.data &&
+                        event.data.size > 0
+                    ) {
+
+                        audioChunks.push(
+                            event.data
+                        );
+
+                    }
+
+                };
+
+
+            mediaRecorder.onstop =
+                function () {
+
+                    clearInterval(
+                        timerInterval
+                    );
+
+
+                    currentBlob =
+                        new Blob(
+                            audioChunks,
+                            {
+                                type:
+                                    mediaRecorder.mimeType
+                            }
+                        );
+
+
+                    preview.src =
+                        URL.createObjectURL(
+                            currentBlob
+                        );
+
+
+                    preview.style.display =
+                        "block";
+
+
+                    uploadBtn.disabled =
+                        false;
+
+
+                    studentName.disabled =
+                        false;
+
+
+                    timerDisplay
+                        .classList
+                        .remove("active");
+
+
+                    recordBtn
+                        .classList
+                        .remove("recording");
+
+
+                    recordBtn.disabled =
+                        false;
+
+
+                    stopBtn.disabled =
+                        true;
+
+
+                    status.textContent =
+                        "✅ Done! Listen before sending. / " +
+                        "¡Listo! Escucha antes de enviar.";
+
+                };
+
+
             mediaRecorder.start();
-            startTime = new Date();
-            timerDisplay.innerText = "00:00";
-            timerDisplay.classList.add('active');
-            timerInterval = setInterval(updateTimer, 1000);
-            status.innerText = "🔴 Recording... / Grabando...";
-            recordBtn.disabled = true; stopBtn.disabled = false;
-        } catch (err) { alert("Microphone error / Error de micrófono"); }
+
+
+            startTime =
+                Date.now();
+
+
+            timerDisplay.textContent =
+                "00:00";
+
+
+            timerDisplay
+                .classList
+                .add("active");
+
+
+            timerInterval =
+                setInterval(
+                    updateTimer,
+                    1000
+                );
+
+
+            recordBtn.disabled =
+                true;
+
+
+            recordBtn
+                .classList
+                .add("recording");
+
+
+            stopBtn.disabled =
+                false;
+
+
+            status.textContent =
+                "🔴 Recording... / Grabando...";
+
+
+        } catch (error) {
+
+            console.error(
+                "Microphone error:",
+                error
+            );
+
+
+            studentName.disabled =
+                false;
+
+
+            updateRecordAvailability();
+
+
+            alert(
+                "Microphone unavailable. " +
+                "Open Voice Lab in a new browser tab and allow microphone access. / " +
+                "Micrófono no disponible. Abre Voice Lab en una pestaña nueva y permite el acceso al micrófono."
+            );
+
+        }
+
     };
 
-    stopBtn.onclick = () => {
+
+/* =========================================================
+   STOP RECORDING
+   ========================================================= */
+
+stopBtn.onclick =
+    function () {
+
+        if (
+            !mediaRecorder ||
+            mediaRecorder.state ===
+                "inactive"
+        ) {
+
+            return;
+
+        }
+
+
         mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(t => t.stop());
-        timerDisplay.classList.remove('active');
-        recordBtn.disabled = false; stopBtn.disabled = true;
+
+
+        mediaRecorder.stream
+            .getTracks()
+            .forEach(
+                function (track) {
+
+                    track.stop();
+
+                }
+            );
+
+
+        stopBtn.disabled =
+            true;
+
     };
 
-    uploadBtn.onclick = function() {
-        status.innerText = "⏳ Sending... / Enviando...";
-        uploadBtn.disabled = true;
-        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const base64Data = event.target.result.split(',')[1];
-            fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ audio: base64Data, type: mediaRecorder.mimeType }) })
-            .then(() => { status.innerText = "🚀 SENT! / ¡ENVIADO!"; alert("Success! / ¡Éxito!"); })
-            .catch(() => { status.innerText = "❌ Error"; uploadBtn.disabled = false; });
-        };
-        reader.readAsDataURL(blob);
+
+/* =========================================================
+   SEND RECORDING
+   ========================================================= */
+
+uploadBtn.onclick =
+    function () {
+
+        if (
+            submitted ||
+            !currentBlob ||
+            !activityToken ||
+            !validStudentName()
+        ) {
+
+            return;
+
+        }
+
+
+        uploadBtn.disabled =
+            true;
+
+
+        recordBtn.disabled =
+            true;
+
+
+        studentName.disabled =
+            true;
+
+
+        status.textContent =
+            "⏳ Sending... / Enviando...";
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            function (event) {
+
+                const base64Data =
+                    event.target.result
+                        .split(",")[1];
+
+
+                const payload = {
+
+                    action:
+                        "uploadAudio",
+
+                    token:
+                        activityToken,
+
+                    userName:
+                        studentName
+                            .value
+                            .trim(),
+
+                    audio:
+                        base64Data,
+
+                    type:
+                        currentBlob.type
+
+                };
+
+
+                fetch(
+                    SCRIPT_URL,
+                    {
+                        method: "POST",
+
+                        mode: "no-cors",
+
+                        body:
+                            JSON.stringify(
+                                payload
+                            )
+                    }
+                )
+
+                .then(
+                    function () {
+
+                        submitted =
+                            true;
+
+
+                        status.textContent =
+                            "🚀 SENT! / ¡ENVIADO!";
+
+
+                        document
+                            .getElementById(
+                                "successBox"
+                            )
+                            .style.display =
+                                "block";
+
+
+                        uploadBtn.style.display =
+                            "none";
+
+
+                        recordBtn.disabled =
+                            true;
+
+
+                        stopBtn.disabled =
+                            true;
+
+
+                        studentName.disabled =
+                            true;
+
+                    }
+                )
+
+                .catch(
+                    function (error) {
+
+                        console.error(
+                            "Upload error:",
+                            error
+                        );
+
+
+                        status.textContent =
+                            "❌ Send error / Error al enviar";
+
+
+                        uploadBtn.disabled =
+                            false;
+
+
+                        studentName.disabled =
+                            false;
+
+
+                        updateRecordAvailability();
+
+                    }
+                );
+
+            };
+
+
+        reader.readAsDataURL(
+            currentBlob
+        );
+
     };
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+loadActivity();
+
 </script>
+
 </body>
 </html>
